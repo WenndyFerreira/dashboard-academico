@@ -226,8 +226,9 @@ if administrador:
         st.markdown("### Cadastrar matéria")
 
         st.caption(
-            "Informe somente as notas máximas. "
-            "Notas obtidas começam em zero.")
+            "Informe as notas de cada atividade. "
+            "A nota obtida será preenchida automaticamente "
+            "com o mesmo valor da nota máxima.")
 
         with st.form("cadastro", clear_on_submit=True,):
             materia = st.text_input("Nome da matéria")
@@ -282,7 +283,7 @@ if administrador:
                         "disciplina": nome,
                         "categoria": categoria,
                         "atividade": categoria,
-                        "nota_obtida": 0.0,
+                        "nota_obtida": float(maxima),
                         "nota_maxima": float(maxima),}
                     for categoria, maxima in valores
                     if maxima > 0]
