@@ -17,12 +17,11 @@ from banco_supabase import (
 
 st.set_page_config(
     page_title="Dashboard Acadêmico",
-    page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Paleta de cores moderna (Indigo / Cyan / Violet / Emerald / Rose)
+# Paleta executiva sobria
 COR_PRIMARIA = "#6366F1"
 COR_SECUNDARIA = "#38BDF8"
 COR_ROXO = "#A855F7"
@@ -48,8 +47,8 @@ html, body, [class*="css"] {
 .stApp, [data-testid="stAppViewContainer"] {
     background-color: #080C14;
     background-image: 
-        radial-gradient(at 15% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 45%),
-        radial-gradient(at 85% 5%, rgba(56, 189, 248, 0.10) 0px, transparent 45%);
+        radial-gradient(at 15% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 45%),
+        radial-gradient(at 85% 5%, rgba(56, 189, 248, 0.08) 0px, transparent 45%);
     color: #F1F5F9;
 }
 
@@ -61,7 +60,7 @@ html, body, [class*="css"] {
 .block-container {
     padding-top: 2rem;
     padding-bottom: 3rem;
-    max-width: 1400px;
+    max-width: 1360px;
 }
 
 /* Sidebar */
@@ -127,15 +126,16 @@ div.stFormSubmitButton > button[kind="primary"]:hover {
 [data-testid="stExpander"] {
     background: rgba(17, 24, 39, 0.65);
     border: 1px solid rgba(148, 163, 184, 0.12) !important;
-    border-radius: 14px !important;
+    border-radius: 12px !important;
     overflow: hidden;
 }
 
 /* Tabs */
 button[data-baseweb="tab"] {
     font-weight: 600 !important;
-    font-size: 0.95rem !important;
+    font-size: 0.92rem !important;
     color: #94A3B8 !important;
+    letter-spacing: 0.01em;
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
@@ -146,7 +146,7 @@ button[data-baseweb="tab"][aria-selected="true"] {
 .hero-card {
     background: linear-gradient(135deg, rgba(19, 28, 46, 0.92) 0%, rgba(15, 23, 42, 0.78) 100%);
     border: 1px solid rgba(148, 163, 184, 0.14);
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 28px 32px;
     margin-bottom: 24px;
     position: relative;
@@ -169,78 +169,84 @@ button[data-baseweb="tab"][aria-selected="true"] {
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(99, 102, 241, 0.14);
-    border: 1px solid rgba(99, 102, 241, 0.32);
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.28);
     color: #A5B4FC;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: 6px;
 }
 
 .hero-mode-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: 6px;
 }
 
 .hero-title {
-    font-size: 2.15rem;
+    font-size: 2rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    margin: 0 0 10px 0;
-    background: linear-gradient(90deg, #FFFFFF 0%, #CBD5E1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    margin: 0 0 12px 0;
+    color: #F8FAFC;
 }
 
 .hero-meta-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 24px;
+    gap: 10px 16px;
     margin-bottom: 12px;
     color: #E2E8F0;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
 }
 
 .hero-meta-item {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: rgba(30, 41, 59, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.14);
     padding: 6px 14px;
-    border-radius: 10px;
+    border-radius: 8px;
+}
+
+.hero-meta-label {
+    color: #94A3B8;
+    font-weight: 500;
 }
 
 .hero-subtitle {
     color: #94A3B8;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     margin: 0;
 }
 
-/* KPI Cards Customizados */
+/* KPI Cards Executivos */
 .kpi-card {
     background: linear-gradient(180deg, rgba(19, 28, 46, 0.85) 0%, rgba(13, 19, 33, 0.9) 100%);
     border: 1px solid rgba(148, 163, 184, 0.12);
-    border-radius: 16px;
+    border-radius: 14px;
     padding: 20px 22px;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     height: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 .kpi-card:hover {
@@ -249,28 +255,20 @@ button[data-baseweb="tab"][aria-selected="true"] {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
 }
 
-.kpi-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.kpi-accent {
+    width: 28px;
+    height: 3px;
+    border-radius: 99px;
     margin-bottom: 12px;
 }
 
 .kpi-label {
     color: #94A3B8;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
-}
-
-.kpi-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
 }
 
 .kpi-value {
@@ -286,16 +284,13 @@ button[data-baseweb="tab"][aria-selected="true"] {
     font-size: 0.78rem;
     font-weight: 500;
     color: #64748B;
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
 /* Subject Cards (Boletim Visual) */
 .subject-card {
     background: rgba(17, 24, 39, 0.75);
     border: 1px solid rgba(148, 163, 184, 0.12);
-    border-radius: 14px;
+    border-radius: 12px;
     padding: 16px 18px;
     margin-bottom: 12px;
 }
@@ -309,22 +304,22 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 .subject-name {
     font-weight: 700;
-    font-size: 0.96rem;
+    font-size: 0.95rem;
     color: #F1F5F9;
 }
 
 .status-pill {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
 
 .progress-track {
     width: 100%;
-    height: 8px;
+    height: 7px;
     background: rgba(30, 41, 59, 0.9);
     border-radius: 999px;
     overflow: hidden;
@@ -346,14 +341,21 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 /* Sidebar Status Card */
 .sidebar-status {
-    background: rgba(30, 41, 59, 0.6);
+    background: rgba(30, 41, 59, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.14);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 </style>""",
     unsafe_allow_html=True,
@@ -463,7 +465,7 @@ def tabela_resumo(df):
     return pd.DataFrame(linhas, columns=colunas_resumo)
 
 
-def tema_grafico(fig, altura=440, esquerda=45):
+def tema_grafico(fig, altura=470, esquerda=50):
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor="#111827",
@@ -475,21 +477,21 @@ def tema_grafico(fig, altura=440, esquerda=45):
         ),
         title=dict(
             font=dict(
-                size=17,
+                size=18,
                 color="#F8FAFC",
                 family="Plus Jakarta Sans, sans-serif",
             ),
             x=0.02,
             xanchor="left",
         ),
-        margin=dict(l=esquerda, r=30, t=75, b=55),
+        margin=dict(l=esquerda, r=35, t=80, b=60),
         height=altura,
         legend=dict(
             bgcolor="rgba(15, 23, 42, 0.6)",
             bordercolor="rgba(148, 163, 184, 0.15)",
             borderwidth=1,
             orientation="h",
-            y=1.13,
+            y=1.12,
             x=0,
         ),
         hoverlabel=dict(
@@ -517,26 +519,20 @@ def tema_grafico(fig, altura=440, esquerda=45):
     return fig
 
 
-def render_kpi(titulo, valor, subtitulo, icone, cor_hex, bg_rgba):
+def render_kpi(titulo, valor, subtitulo, cor_hex):
     return f"""
     <div class="kpi-card">
-        <div class="kpi-top">
-            <span class="kpi-label">{titulo}</span>
-            <div class="kpi-icon" style="background: {bg_rgba}; color: {cor_hex}; border: 1px solid {cor_hex}33;">
-                {icone}
-            </div>
-        </div>
+        <div class="kpi-accent" style="background: {cor_hex};"></div>
+        <div class="kpi-label">{titulo}</div>
         <div class="kpi-value">{valor}</div>
-        <div class="kpi-sub">
-            <span style="color: {cor_hex}; font-weight: 700;">●</span> {subtitulo}
-        </div>
+        <div class="kpi-sub">{subtitulo}</div>
     </div>
     """
 
 
 # CONEXÃO E AUTENTICAÇÃO
 with st.sidebar:
-    st.markdown("## 🎓 Painel Acadêmico")
+    st.markdown("## Painel Acadêmico")
 
     c, uid = conectar()
     admin_id = str(st.secrets.get("ADMIN_USER_ID", "")).strip()
@@ -545,24 +541,24 @@ with st.sidebar:
 
     if c is not None and not administrador:
         st.warning("Esta conta não possui acesso de administração.")
-        if st.button("🚪 Sair da conta", use_container_width=True):
+        if st.button("Sair da conta", use_container_width=True):
             st.session_state.pop("auth", None)
             st.rerun()
 
     elif administrador:
         st.markdown(
             """
-            <div class="sidebar-status" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.1);">
-                <span style="font-size: 1.2rem;">🛡️</span>
+            <div class="sidebar-status" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.08);">
+                <span class="status-dot" style="background: #10B981;"></span>
                 <div>
-                    <div style="font-weight: 700; font-size: 0.85rem; color: #34D399;">Modo Administrador</div>
-                    <div style="font-size: 0.75rem; color: #94A3B8;">Edição habilitada</div>
+                    <div style="font-weight: 700; font-size: 0.84rem; color: #34D399;">Modo Administrador</div>
+                    <div style="font-size: 0.74rem; color: #94A3B8;">Edição habilitada</div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("🚪 Sair da conta", use_container_width=True):
+        if st.button("Sair da conta", use_container_width=True):
             st.session_state.pop("auth", None)
             st.rerun()
 
@@ -570,20 +566,20 @@ with st.sidebar:
         st.markdown(
             """
             <div class="sidebar-status">
-                <span style="font-size: 1.2rem;">👁️</span>
+                <span class="status-dot" style="background: #38BDF8;"></span>
                 <div>
-                    <div style="font-weight: 700; font-size: 0.85rem; color: #E2E8F0;">Modo Visitante</div>
-                    <div style="font-size: 0.75rem; color: #94A3B8;">Visualização pública (somente leitura)</div>
+                    <div style="font-weight: 700; font-size: 0.84rem; color: #E2E8F0;">Modo Visitante</div>
+                    <div style="font-size: 0.74rem; color: #94A3B8;">Somente leitura</div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        with st.expander("🔐 Entrar como administrador"):
+        with st.expander("Entrar como administrador"):
             with st.form("login"):
-                email = st.text_input("E-mail", placeholder="admin@email.com")
-                senha = st.text_input("Senha", type="password", placeholder="••••••••")
+                email = st.text_input("E-mail")
+                senha = st.text_input("Senha", type="password")
                 entrar = st.form_submit_button(
                     "Entrar",
                     type="primary",
@@ -613,15 +609,15 @@ except Exception:
 if administrador:
     with st.sidebar:
         st.divider()
-        st.markdown("### ⚙️ Gerenciar Notas")
+        st.markdown("### Gerenciamento")
 
-        with st.expander("➕ Cadastrar matéria", expanded=dados.empty):
+        with st.expander("Cadastrar matéria", expanded=dados.empty):
             st.caption(
                 "Informe as notas de cada atividade. "
                 "A nota obtida será preenchida automaticamente com o mesmo valor da nota máxima."
             )
             with st.form("cadastro", clear_on_submit=True):
-                materia = st.text_input("Nome da matéria", placeholder="Ex: Engenharia de Software")
+                materia = st.text_input("Nome da matéria")
                 c_p, c_e = st.columns(2)
                 presenca = c_p.number_input(
                     "Presença (máx)",
@@ -698,7 +694,7 @@ if administrador:
 
         # ATUALIZAR NOTA
         if not dados.empty:
-            with st.expander("✏️ Atualizar nota obtida", expanded=True):
+            with st.expander("Atualizar nota obtida", expanded=True):
                 nome = st.selectbox(
                     "Matéria",
                     dados["disciplina"].unique().tolist(),
@@ -741,14 +737,14 @@ if administrador:
                         st.error("Não foi possível atualizar a nota.")
 
             # EXCLUIR MATÉRIA
-            with st.expander("🗑️ Excluir matéria"):
+            with st.expander("Excluir matéria"):
                 apagar = st.selectbox(
                     "Matéria para excluir",
                     dados["disciplina"].unique().tolist(),
                 )
                 confirma = st.checkbox("Confirmo a exclusão definitiva desta matéria")
                 if st.button(
-                    "🗑️ Excluir matéria",
+                    "Excluir matéria",
                     disabled=not confirma,
                     use_container_width=True,
                 ):
@@ -761,7 +757,7 @@ if administrador:
                         st.error("Não foi possível excluir a matéria.")
 
         # IMPORTAÇÃO DE CSV
-        with st.expander("📥 Importar CSV antigo"):
+        with st.expander("Importar CSV antigo"):
             arquivo = st.file_uploader("Selecione notas_academicas.csv", type="csv")
             if arquivo is not None:
                 try:
@@ -797,26 +793,26 @@ if administrador:
 
 # MENSAGENS E CABEÇALHO
 if "mensagem" in st.session_state:
-    st.toast(st.session_state.pop("mensagem"), icon="✅")
+    st.success(st.session_state.pop("mensagem"))
 
 modo_cor = "#10B981" if administrador else "#38BDF8"
-modo_bg = "rgba(16, 185, 129, 0.14)" if administrador else "rgba(56, 189, 248, 0.14)"
-modo_txt = "🛡️ Administração" if administrador else "🌐 Visualização Pública"
+modo_bg = "rgba(16, 185, 129, 0.12)" if administrador else "rgba(56, 189, 248, 0.12)"
+modo_txt = "Administração" if administrador else "Visualização Pública"
 
 st.markdown(
     f"""
     <div class="hero-card">
         <div class="hero-top-row">
-            <span class="hero-badge">🎓 Analytics • Portfólio Acadêmico</span>
+            <span class="hero-badge">Portfólio Acadêmico</span>
             <span class="hero-mode-pill" style="color: {modo_cor}; background: {modo_bg}; border: 1px solid {modo_cor}44;">
                 {modo_txt}
             </span>
         </div>
         <h1 class="hero-title">DASHBOARD ACADÊMICO</h1>
         <div class="hero-meta-grid">
-            <span class="hero-meta-item">👤 <b>Wenndy Ferreira dos Santos</b></span>
-            <span class="hero-meta-item">💻 Graduação em Análise e Desenvolvimento de Sistemas (ADS)</span>
-            <span class="hero-meta-item">🏛️ Instituição de ensino: <b>Anhanguera</b></span>
+            <span class="hero-meta-item"><span class="hero-meta-label">Discente:</span> <b>Wenndy Ferreira dos Santos</b></span>
+            <span class="hero-meta-item"><span class="hero-meta-label">Curso:</span> <b>Análise e Desenvolvimento de Sistemas (ADS)</b></span>
+            <span class="hero-meta-item"><span class="hero-meta-label">Instituição:</span> <b>Anhanguera</b></span>
         </div>
         <p class="hero-subtitle">Acompanhamento de notas, avaliações e desempenho acadêmico por disciplina.</p>
     </div>
@@ -845,28 +841,19 @@ with c1:
             "Disciplinas",
             f"{total_disc}",
             "Matérias registradas no histórico",
-            "📚",
             COR_PRIMARIA,
-            "rgba(99, 102, 241, 0.15)",
         ),
         unsafe_allow_html=True,
     )
 
 with c2:
     cor_media = COR_SUCESSO if media_final >= 60 else COR_ALERTA
-    bg_media = (
-        "rgba(16, 185, 129, 0.15)"
-        if media_final >= 60
-        else "rgba(245, 158, 11, 0.15)"
-    )
     st.markdown(
         render_kpi(
             "Média das notas finais",
             f'{formatar_nota(round(media_final, 1))} <span style="font-size:1rem;color:#64748B;">/ 100</span>',
-            "Meta de aprovação: 60 pts",
-            "📈",
+            "Meta de aprovação: 60 pontos",
             cor_media,
-            bg_media,
         ),
         unsafe_allow_html=True,
     )
@@ -877,9 +864,7 @@ with c3:
             "Aprovadas (≥ 60)",
             f'{aprovadas} <span style="font-size:1rem;color:#64748B;">de {total_disc}</span>',
             f"{taxa_aprov:.0f}% de aproveitamento",
-            "🏆",
             COR_SUCESSO,
-            "rgba(16, 185, 129, 0.15)",
         ),
         unsafe_allow_html=True,
     )
@@ -887,17 +872,15 @@ with c3:
 with c4:
     melhor_curto = (
         melhor_materia
-        if len(melhor_materia) <= 22
-        else melhor_materia[:20] + "…"
+        if len(melhor_materia) <= 24
+        else melhor_materia[:22] + "…"
     )
     st.markdown(
         render_kpi(
             "Maior nota",
             f'{formatar_nota(maior_nota)} <span style="font-size:1rem;color:#64748B;">pts</span>',
             f"Destaque: {melhor_curto}",
-            "⭐",
             COR_SECUNDARIA,
-            "rgba(56, 189, 248, 0.15)",
         ),
         unsafe_allow_html=True,
     )
@@ -911,109 +894,105 @@ resumo["Nota Prova Formatada"] = resumo["Nota da Prova"].apply(formatar_nota)
 
 aba_visao, aba_boletim, aba_dados = st.tabs(
     [
-        "📊 Visão Gráfica",
-        "🎯 Progresso por Matéria",
-        "🗄️ Tabelas e Registros",
+        "Visão Gráfica",
+        "Progresso por Matéria",
+        "Tabelas e Registros",
     ]
 )
 
 with aba_visao:
-    col_esq, col_dir = st.columns([1.15, 0.85], gap="large")
-
-    with col_esq:
-        # GRÁFICO 1 - NOTA FINAL POR MATÉRIA
-        cores_marcadores = [
-            COR_SUCESSO if v >= 60 else COR_PERIGO
-            for v in resumo["Nota Final"]
-        ]
-        fig1 = go.Figure()
-        fig1.add_trace(
-            go.Scatter(
-                x=resumo["Nome Gráfico"],
-                y=resumo["Nota Final"],
-                mode="lines+markers+text",
-                text=resumo["Nota Final Formatada"].tolist(),
-                textposition="top center",
-                textfont=dict(
-                    size=12,
-                    color="#F8FAFC",
-                    family="JetBrains Mono, monospace",
-                ),
-                line=dict(
-                    color=COR_PRIMARIA,
-                    width=3.5,
-                    shape="spline",
-                    smoothing=0.8,
-                ),
-                fill="tozeroy",
-                fillcolor="rgba(99, 102, 241, 0.12)",
-                marker=dict(
-                    size=12,
-                    color=cores_marcadores,
-                    line=dict(width=2.5, color="#0F172A"),
-                ),
-                customdata=resumo[["Matéria", "Nota Final Formatada"]],
-                hovertemplate="<b>%{customdata[0]}</b><br>Nota final: <b>%{customdata[1]} pts</b><extra></extra>",
-            )
-        )
-        fig1.add_hline(
-            y=60,
-            line_dash="dash",
-            line_color=COR_SUCESSO,
-            opacity=0.75,
-            annotation_text="Aprovação: 60",
-            annotation_position="top left",
-            annotation_font=dict(color=COR_SUCESSO, size=11),
-        )
-        fig1.update_layout(title="Nota final por matéria")
-        fig1.update_xaxes(title=None, tickangle=0, tickfont=dict(size=10))
-        fig1.update_yaxes(
-            title="Nota final",
-            range=[0, max(108, float(resumo["Nota Final"].max()) * 1.15)],
-        )
-        st.plotly_chart(
-            tema_grafico(fig1, altura=450),
-            use_container_width=True,
-        )
-
-    with col_dir:
-        # GRÁFICO 2 - NOTAS DAS PROVAS
-        fig2 = px.bar(
-            resumo,
-            x="Nota da Prova",
-            y="Matéria",
-            orientation="h",
-            title="Notas das provas por matéria",
-            color="Nota da Prova",
-            color_continuous_scale=["#4F46E5", "#38BDF8", "#10B981"],
-        )
-        fig2.update_traces(
-            text=resumo["Nota Prova Formatada"].tolist(),
-            textposition="outside",
-            cliponaxis=False,
-            hovertemplate="<b>%{y}</b><br>Nota da prova: <b>%{text} pts</b><extra></extra>",
-        )
-        fig2.update_coloraxes(showscale=False)
-        fig2.update_xaxes(
-            title="Nota da avaliação",
-            range=[0, max(55, float(resumo["Nota da Prova"].max()) * 1.2)],
-        )
-        fig2.update_yaxes(
-            title=None,
-            automargin=True,
-            categoryorder="array",
-            categoryarray=resumo["Matéria"].tolist()[::-1],
-        )
-        st.plotly_chart(
-            tema_grafico(
-                fig2,
-                altura=max(450, 62 * len(resumo)),
-                esquerda=190,
+    # GRÁFICO 1 - NOTA FINAL POR MATÉRIA (LARGURA TOTAL)
+    cores_marcadores = [
+        COR_SUCESSO if v >= 60 else COR_PERIGO
+        for v in resumo["Nota Final"]
+    ]
+    fig1 = go.Figure()
+    fig1.add_trace(
+        go.Scatter(
+            x=resumo["Nome Gráfico"],
+            y=resumo["Nota Final"],
+            mode="lines+markers+text",
+            text=resumo["Nota Final Formatada"].tolist(),
+            textposition="top center",
+            textfont=dict(
+                size=12,
+                color="#F8FAFC",
+                family="JetBrains Mono, monospace",
             ),
-            use_container_width=True,
+            line=dict(
+                color=COR_PRIMARIA,
+                width=3.5,
+                shape="spline",
+                smoothing=0.8,
+            ),
+            fill="tozeroy",
+            fillcolor="rgba(99, 102, 241, 0.12)",
+            marker=dict(
+                size=11,
+                color=cores_marcadores,
+                line=dict(width=2.5, color="#0F172A"),
+            ),
+            customdata=resumo[["Matéria", "Nota Final Formatada"]],
+            hovertemplate="<b>%{customdata[0]}</b><br>Nota final: <b>%{customdata[1]} pts</b><extra></extra>",
         )
+    )
+    fig1.add_hline(
+        y=60,
+        line_dash="dash",
+        line_color=COR_SUCESSO,
+        opacity=0.75,
+        annotation_text="Aprovação: 60",
+        annotation_position="top left",
+        annotation_font=dict(color=COR_SUCESSO, size=11),
+    )
+    fig1.update_layout(title="Nota final por matéria")
+    fig1.update_xaxes(title=None, tickangle=0, tickfont=dict(size=11))
+    fig1.update_yaxes(
+        title="Nota final",
+        range=[0, max(108, float(resumo["Nota Final"].max()) * 1.15)],
+    )
+    st.plotly_chart(
+        tema_grafico(fig1, altura=480),
+        use_container_width=True,
+    )
 
-    # GRÁFICO 3 - COMPARAÇÃO DE NOTAS
+    # GRÁFICO 2 - NOTAS DAS PROVAS (ABAIXO DO GRÁFICO 1, LARGURA TOTAL)
+    fig2 = px.bar(
+        resumo,
+        x="Nota da Prova",
+        y="Matéria",
+        orientation="h",
+        title="Notas das provas por matéria",
+        color="Nota da Prova",
+        color_continuous_scale=["#4F46E5", "#38BDF8", "#10B981"],
+    )
+    fig2.update_traces(
+        text=resumo["Nota Prova Formatada"].tolist(),
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate="<b>%{y}</b><br>Nota da prova: <b>%{text} pts</b><extra></extra>",
+    )
+    fig2.update_coloraxes(showscale=False)
+    fig2.update_xaxes(
+        title="Nota da avaliação",
+        range=[0, max(55, float(resumo["Nota da Prova"].max()) * 1.15)],
+    )
+    fig2.update_yaxes(
+        title=None,
+        automargin=True,
+        categoryorder="array",
+        categoryarray=resumo["Matéria"].tolist()[::-1],
+    )
+    st.plotly_chart(
+        tema_grafico(
+            fig2,
+            altura=max(440, 62 * len(resumo)),
+            esquerda=240,
+        ),
+        use_container_width=True,
+    )
+
+    # GRÁFICO 3 - COMPARAÇÃO DE NOTAS (ABAIXO DO GRÁFICO 2, LARGURA TOTAL)
     categorias_comparacao = ["Presença/Progresso", "Exercícios", "Trabalhos"]
     fig3 = px.bar(
         resumo,
@@ -1040,24 +1019,24 @@ with aba_visao:
             hovertemplate="%{x}<br>" + trace.name + ": <b>%{text}</b><extra></extra>",
         )
 
-    fig3.update_xaxes(title=None, tickangle=0, tickfont=dict(size=10))
+    fig3.update_xaxes(title=None, tickangle=0, tickfont=dict(size=11))
     fig3.update_yaxes(
         title="Pontos",
         range=[
             0,
             max(
                 35,
-                float(resumo[categorias_comparacao].max().max()) * 1.22,
+                float(resumo[categorias_comparacao].max().max()) * 1.2,
             ),
         ],
     )
     st.plotly_chart(
-        tema_grafico(fig3, altura=460),
+        tema_grafico(fig3, altura=490),
         use_container_width=True,
     )
 
 with aba_boletim:
-    st.markdown("#### 🎯 Acompanhamento Individual por Disciplina")
+    st.markdown("#### Acompanhamento Individual por Disciplina")
     st.caption(
         "Barras de progresso rumo aos 100 pontos. A marca de 60 pontos define a aprovação na matéria."
     )
@@ -1074,9 +1053,9 @@ with aba_boletim:
         )
         cor_status = "#10B981" if aprovado else "#F59E0B"
         bg_status = (
-            "rgba(16, 185, 129, 0.14)"
+            "rgba(16, 185, 129, 0.12)"
             if aprovado
-            else "rgba(245, 158, 11, 0.14)"
+            else "rgba(245, 158, 11, 0.12)"
         )
         txt_status = (
             "Aprovado"
@@ -1096,10 +1075,10 @@ with aba_boletim:
                 <div class="progress-fill" style="width: {pct}%; background: {cor_barra};"></div>
             </div>
             <div class="subject-meta">
-                <span>📝 Prova: <b>{formatar_nota(linha['Nota da Prova'])}</b></span>
-                <span>📚 Trabalhos: <b>{formatar_nota(linha['Trabalhos'])}</b></span>
-                <span>✍️ Exercícios: <b>{formatar_nota(linha['Exercícios'])}</b></span>
-                <span>🙋 Presença: <b>{formatar_nota(linha['Presença/Progresso'])}</b></span>
+                <span>Prova: <b>{formatar_nota(linha['Nota da Prova'])}</b></span>
+                <span>Trabalhos: <b>{formatar_nota(linha['Trabalhos'])}</b></span>
+                <span>Exercícios: <b>{formatar_nota(linha['Exercícios'])}</b></span>
+                <span>Presença: <b>{formatar_nota(linha['Presença/Progresso'])}</b></span>
             </div>
         </div>
         """
@@ -1114,7 +1093,7 @@ with aba_dados:
         "Nota Final Formatada",
         "Nota Prova Formatada",
     ]
-    st.markdown("#### 📋 Resumo das Notas")
+    st.markdown("#### Resumo das Notas")
     st.dataframe(
         resumo.drop(columns=colunas_auxiliares, errors="ignore"),
         use_container_width=True,
@@ -1129,12 +1108,12 @@ with aba_dados:
         },
     )
 
-    st.markdown("#### 🗄️ Registros Acadêmicos")
+    st.markdown("#### Registros Acadêmicos")
     st.dataframe(dados[COLUNAS], use_container_width=True, hide_index=True)
 
 st.divider()
 st.caption(
-    "🎓 Dashboard Acadêmico • Desenvolvido por Wenndy Ferreira dos Santos • "
+    "Dashboard Acadêmico • Desenvolvido por Wenndy Ferreira dos Santos • "
     "Python · Streamlit · Pandas · Plotly · Supabase • "
     + ("Administração" if administrador else "Visualização pública")
 )
