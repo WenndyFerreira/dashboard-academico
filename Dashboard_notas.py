@@ -1,81 +1,364 @@
 import logging
+import textwrap
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from banco_supabase import (login, conectar, carregar, carregar_publico, inserir, atualizar, excluir, COLUNAS,)
+import plotly.graph_objects as go
+from banco_supabase import (
+    login,
+    conectar,
+    carregar,
+    carregar_publico,
+    inserir,
+    atualizar,
+    excluir,
+    COLUNAS,
+)
 
-st.set_page_config( page_title="Dashboard Acadêmico", page_icon="🎓", layout="wide",)
+st.set_page_config(
+    page_title="Dashboard Acadêmico",
+    page_icon="🎓",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-VERMELHO = "#E53945"
+# Paleta de cores moderna (Indigo / Cyan / Violet / Emerald / Rose)
+COR_PRIMARIA = "#6366F1"
+COR_SECUNDARIA = "#38BDF8"
+COR_ROXO = "#A855F7"
+COR_SUCESSO = "#10B981"
+COR_ALERTA = "#F59E0B"
+COR_PERIGO = "#F43F5E"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-st.markdown(""" <style>
-    :root {color-scheme: dark;}
+st.markdown(
+    """<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
-    .stApp, [data-testid="stAppViewContainer"] {
-        background: #0B0C0F;
-        color: #F5F5F7;}
+:root {
+    color-scheme: dark;
+}
 
-    [data-testid="stSidebar"] {
-        background: #15161B;
-        border-right: 1px solid #303139;}
+html, body, [class*="css"] {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3 {
-        color: #FAFAFC;}
+.stApp, [data-testid="stAppViewContainer"] {
+    background-color: #080C14;
+    background-image: 
+        radial-gradient(at 15% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 45%),
+        radial-gradient(at 85% 5%, rgba(56, 189, 248, 0.10) 0px, transparent 45%);
+    color: #F1F5F9;
+}
 
-    [data-testid="stHeader"] {
-        background: rgba(11,12,15,.9);}
+[data-testid="stHeader"] {
+    background: rgba(8, 12, 20, 0.75);
+    backdrop-filter: blur(12px);
+}
 
-    h1, h2, h3 {letter-spacing: -.02em;}
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 1400px;
+}
 
-    h1 {font-size: 2.4rem !important;}
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0D1322 0%, #090D18 100%);
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+}
 
-    [data-testid="stMetric"] {
-        background: #181A20;
-        border: 1px solid #2D2F38;
-        border-radius: 14px;
-        padding: 18px;}
+[data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    color: #F8FAFC;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
 
-    [data-testid="stMetricValue"] {
-        color: #FAFAFC;}
+/* Inputs & Selectboxes */
+div[data-baseweb="input"] > div,
+div[data-baseweb="select"] > div {
+    background-color: rgba(15, 23, 42, 0.75) !important;
+    border-color: rgba(148, 163, 184, 0.18) !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease;
+}
 
-    div.stButton > button[kind="primary"] {
-        background: #C92534;
-        color: white;
-        border: 0;
-        font-weight: 700;}
+div[data-baseweb="input"] > div:focus-within,
+div[data-baseweb="select"] > div:focus-within {
+    border-color: #6366F1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
+}
 
-    div.stButton > button[kind="primary"]:hover {
-        background: #E53945;
-        color: white;}
+/* Botões */
+div.stButton > button, div.stFormSubmitButton > button {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(30, 41, 59, 0.7);
+    color: #F1F5F9;
+}
 
-    div.stButton > button {
-        border-radius: 9px;}
+div.stButton > button:hover, div.stFormSubmitButton > button:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(51, 65, 85, 0.8);
+    transform: translateY(-1px);
+}
 
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border-color: #2D2F38;}
+div.stButton > button[kind="primary"],
+div.stFormSubmitButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    color: #FFFFFF;
+    border: none;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
 
-    hr {border-color: #303139;}
+div.stButton > button[kind="primary"]:hover,
+div.stFormSubmitButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #818CF8 0%, #6366F1 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    color: #FFFFFF;
+}
 
-    .hero {
-        background: #16171C;
-        border: 1px solid #303139;
-        border-left: 4px solid #E53945;
-        padding: 23px 28px;
-        border-radius: 14px;
-        margin-bottom: 22px;}
+/* Expanders */
+[data-testid="stExpander"] {
+    background: rgba(17, 24, 39, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+    border-radius: 14px !important;
+    overflow: hidden;
+}
 
-    .hero h1 {
-        margin: 0 0 8px 0;
-        color: white;}
+/* Tabs */
+button[data-baseweb="tab"] {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    color: #94A3B8 !important;
+}
 
-    .hero p {color: #B7BAC4; margin: 0;}
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #F8FAFC !important;
+}
 
-    .small-muted {color: #A6A8B1; font-size: .87rem;}
-    </style>""", unsafe_allow_html=True,)
+/* Hero Banner */
+.hero-card {
+    background: linear-gradient(135deg, rgba(19, 28, 46, 0.92) 0%, rgba(15, 23, 42, 0.78) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
+}
+
+.hero-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366F1, #38BDF8, #A855F7);
+}
+
+.hero-top-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(99, 102, 241, 0.14);
+    border: 1px solid rgba(99, 102, 241, 0.32);
+    color: #A5B4FC;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.hero-mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.hero-title {
+    font-size: 2.15rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 10px 0;
+    background: linear-gradient(90deg, #FFFFFF 0%, #CBD5E1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-bottom: 12px;
+    color: #E2E8F0;
+    font-size: 0.92rem;
+}
+
+.hero-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 41, 59, 0.55);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    padding: 6px 14px;
+    border-radius: 10px;
+}
+
+.hero-subtitle {
+    color: #94A3B8;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* KPI Cards Customizados */
+.kpi-card {
+    background: linear-gradient(180deg, rgba(19, 28, 46, 0.85) 0%, rgba(13, 19, 33, 0.9) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 16px;
+    padding: 20px 22px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    height: 100%;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.kpi-label {
+    color: #94A3B8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #F8FAFC;
+    line-height: 1.15;
+    margin-bottom: 8px;
+}
+
+.kpi-sub {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Subject Cards (Boletim Visual) */
+.subject-card {
+    background: rgba(17, 24, 39, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+}
+
+.subject-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.subject-name {
+    font-weight: 700;
+    font-size: 0.96rem;
+    color: #F1F5F9;
+}
+
+.status-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.subject-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: #94A3B8;
+}
+
+/* Sidebar Status Card */
+.sidebar-status {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+</style>""",
+    unsafe_allow_html=True,
+)
+
 
 # FUNÇÕES AUXILIARES
 def abreviar_materia(nome):
@@ -86,8 +369,14 @@ def abreviar_materia(nome):
         "Arquitetura e Organização de Computadores": "Arquitetura e<br>Organização",
         "Segurança e Auditoria de Sistemas": "Segurança e<br>Auditoria",
         "Interface e Usabilidade": "Interface e<br>Usabilidade",
-        "Engenharia de Software": "Engenharia de<br>Software",}
-    return nomes.get(nome, nome)
+        "Engenharia de Software": "Engenharia de<br>Software",
+    }
+    if nome in nomes:
+        return nomes[nome]
+    if len(nome) > 18:
+        linhas = textwrap.wrap(nome, width=16)
+        return "<br>".join(linhas[:2])
+    return nome
 
 
 def formatar_nota(valor):
@@ -99,15 +388,25 @@ def formatar_nota(valor):
 
 
 def avaliacao_valida(parte):
-    categorias_avaliacao = ["Prova", "Recuperação", "Segunda Chamada",]
-    avaliacoes = parte.loc[parte["categoria"].isin(categorias_avaliacao), "nota_obtida",]
+    categorias_avaliacao = ["Prova", "Recuperação", "Segunda Chamada"]
+    avaliacoes = parte.loc[
+        parte["categoria"].isin(categorias_avaliacao),
+        "nota_obtida",
+    ]
     if avaliacoes.empty:
         return 0.0
-
     return float(avaliacoes.max())
 
+
 def tabela_resumo(df):
-    colunas_resumo = ["Matéria", "Nota Final", "Nota da Prova", "Presença/Progresso", "Exercícios", "Trabalhos",]
+    colunas_resumo = [
+        "Matéria",
+        "Nota Final",
+        "Nota da Prova",
+        "Presença/Progresso",
+        "Exercícios",
+        "Trabalhos",
+    ]
 
     if df.empty:
         return pd.DataFrame(columns=colunas_resumo)
@@ -115,91 +414,189 @@ def tabela_resumo(df):
     base = df.copy()
     base["disciplina"] = base["disciplina"].astype(str).str.strip()
     base["categoria"] = base["categoria"].astype(str).str.strip()
-    base["nota_obtida"] = pd.to_numeric(base["nota_obtida"], errors="coerce",).fillna(0.0)
+    base["nota_obtida"] = pd.to_numeric(
+        base["nota_obtida"],
+        errors="coerce",
+    ).fillna(0.0)
 
-    categorias_avaliacao = ["Prova", "Recuperação", "Segunda Chamada",]
-
+    categorias_avaliacao = ["Prova", "Recuperação", "Segunda Chamada"]
     linhas = []
 
-    for materia, parte in base.groupby("disciplina", sort=False,):
-        atividades_comuns = parte.loc[~parte["categoria"].isin(categorias_avaliacao), "nota_obtida",].sum()
+    for materia, parte in base.groupby("disciplina", sort=False):
+        atividades_comuns = parte.loc[
+            ~parte["categoria"].isin(categorias_avaliacao),
+            "nota_obtida",
+        ].sum()
         nota_avaliacao = avaliacao_valida(parte)
         nota_final = float(atividades_comuns + nota_avaliacao)
 
-        presenca = float(parte.loc[parte["categoria"].isin(["Progresso em Aula", "Presença online"]), "nota_obtida",].sum())
+        presenca = float(
+            parte.loc[
+                parte["categoria"].isin(["Progresso em Aula", "Presença online"]),
+                "nota_obtida",
+            ].sum()
+        )
+        exercicios = float(
+            parte.loc[
+                parte["categoria"].isin(["Exercício", "Exercício de unidade"]),
+                "nota_obtida",
+            ].sum()
+        )
+        trabalhos = float(
+            parte.loc[
+                parte["categoria"] == "Trabalho",
+                "nota_obtida",
+            ].sum()
+        )
 
-        exercicios = float(parte.loc[parte["categoria"].isin(["Exercício", "Exercício de unidade"]), "nota_obtida",].sum())
+        linhas.append(
+            {
+                "Matéria": materia,
+                "Nota Final": nota_final,
+                "Nota da Prova": nota_avaliacao,
+                "Presença/Progresso": presenca,
+                "Exercícios": exercicios,
+                "Trabalhos": trabalhos,
+            }
+        )
 
-        trabalhos = float(parte.loc[parte["categoria"] == "Trabalho", "nota_obtida",].sum())
+    return pd.DataFrame(linhas, columns=colunas_resumo)
 
-        linhas.append({"Matéria": materia, "Nota Final": nota_final, "Nota da Prova": nota_avaliacao, "Presença/Progresso": presenca, "Exercícios": exercicios, "Trabalhos": trabalhos,})
 
-    return pd.DataFrame(linhas, columns=colunas_resumo,)
-
-def tema_grafico(fig, altura=470, esquerda=50):
-    fig.update_layout(template="plotly_dark", paper_bgcolor="#17191F", plot_bgcolor="#17191F", font=dict(color="#EDEEF2", family="Arial", size=12,),
-        title=dict(font=dict(size=19,color="#FFFFFF",), x=0.02, xanchor="left",),
-        margin=dict(
-            l=esquerda,
-            r=35,
-            t=80,
-            b=65,),
-        height=altura,legend=dict(bgcolor="rgba(0,0,0,0)", orientation="h", y=1.12, x=0,),
-        hoverlabel=dict(bgcolor="#252831", font_color="white",),)
-
-    fig.update_xaxes(gridcolor="#292B33", zerolinecolor="#292B33",)
-
-    fig.update_yaxes(gridcolor="#292B33", zerolinecolor="#292B33",)
+def tema_grafico(fig, altura=440, esquerda=45):
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(
+            color="#E2E8F0",
+            family="Plus Jakarta Sans, sans-serif",
+            size=12,
+        ),
+        title=dict(
+            font=dict(
+                size=17,
+                color="#F8FAFC",
+                family="Plus Jakarta Sans, sans-serif",
+            ),
+            x=0.02,
+            xanchor="left",
+        ),
+        margin=dict(l=esquerda, r=30, t=75, b=55),
+        height=altura,
+        legend=dict(
+            bgcolor="rgba(15, 23, 42, 0.6)",
+            bordercolor="rgba(148, 163, 184, 0.15)",
+            borderwidth=1,
+            orientation="h",
+            y=1.13,
+            x=0,
+        ),
+        hoverlabel=dict(
+            bgcolor="#1E293B",
+            bordercolor="#475569",
+            font=dict(
+                color="#F8FAFC",
+                family="Plus Jakarta Sans, sans-serif",
+                size=13,
+            ),
+        ),
+    )
+    try:
+        fig.update_layout(barcornerradius=6)
+    except Exception:
+        pass
+    fig.update_xaxes(
+        gridcolor="rgba(148, 163, 184, 0.08)",
+        zerolinecolor="rgba(148, 163, 184, 0.15)",
+    )
+    fig.update_yaxes(
+        gridcolor="rgba(148, 163, 184, 0.08)",
+        zerolinecolor="rgba(148, 163, 184, 0.15)",
+    )
     return fig
+
+
+def render_kpi(titulo, valor, subtitulo, icone, cor_hex, bg_rgba):
+    return f"""
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-label">{titulo}</span>
+            <div class="kpi-icon" style="background: {bg_rgba}; color: {cor_hex}; border: 1px solid {cor_hex}33;">
+                {icone}
+            </div>
+        </div>
+        <div class="kpi-value">{valor}</div>
+        <div class="kpi-sub">
+            <span style="color: {cor_hex}; font-weight: 700;">●</span> {subtitulo}
+        </div>
+    </div>
+    """
+
 
 # CONEXÃO E AUTENTICAÇÃO
 with st.sidebar:
-    st.markdown("## 🎓 Painel acadêmico")
+    st.markdown("## 🎓 Painel Acadêmico")
 
     c, uid = conectar()
-
     admin_id = str(st.secrets.get("ADMIN_USER_ID", "")).strip()
 
-    administrador = (c is not None
-        and bool(admin_id)
-        and uid == admin_id)
+    administrador = c is not None and bool(admin_id) and uid == admin_id
 
     if c is not None and not administrador:
         st.warning("Esta conta não possui acesso de administração.")
-
-        if st.button("Sair da conta"):
+        if st.button("🚪 Sair da conta", use_container_width=True):
             st.session_state.pop("auth", None)
             st.rerun()
 
     elif administrador:
-        st.success("Modo administrador")
-
-        if st.button("Sair da conta"):
+        st.markdown(
+            """
+            <div class="sidebar-status" style="border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.1);">
+                <span style="font-size: 1.2rem;">🛡️</span>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #34D399;">Modo Administrador</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8;">Edição habilitada</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🚪 Sair da conta", use_container_width=True):
             st.session_state.pop("auth", None)
             st.rerun()
 
     else:
-        st.caption("Modo visitante · somente leitura")
+        st.markdown(
+            """
+            <div class="sidebar-status">
+                <span style="font-size: 1.2rem;">👁️</span>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: #E2E8F0;">Modo Visitante</div>
+                    <div style="font-size: 0.75rem; color: #94A3B8;">Visualização pública (somente leitura)</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         with st.expander("🔐 Entrar como administrador"):
             with st.form("login"):
-                email = st.text_input("E-mail")
-
-                senha = st.text_input("Senha", type="password",)
-
-                entrar = st.form_submit_button("Entrar", type="primary",)
+                email = st.text_input("E-mail", placeholder="admin@email.com")
+                senha = st.text_input("Senha", type="password", placeholder="••••••••")
+                entrar = st.form_submit_button(
+                    "Entrar",
+                    type="primary",
+                    use_container_width=True,
+                )
 
             if entrar:
                 try:
                     login(email, senha)
                     st.rerun()
-
                 except Exception:
                     logger.exception("Falha na autenticação")
-
-                    st.error(
-                        "Não foi possível entrar. "
-                        "Verifique suas credenciais.")
+                    st.error("Não foi possível entrar. Verifique suas credenciais.")
 
 # CARREGAMENTO DOS DADOS
 try:
@@ -207,207 +604,225 @@ try:
         dados = carregar(c)
     else:
         dados = carregar_publico()
-
 except Exception:
-    logger.exception(
-        "Falha ao carregar dados do Supabase")
-
-    st.error(
-        "Não foi possível carregar os dados do Supabase. "
-        "Tente novamente mais tarde.")
-
+    logger.exception("Falha ao carregar dados do Supabase")
+    st.error("Não foi possível carregar os dados do Supabase. Tente novamente mais tarde.")
     st.stop()
 
 # ÁREA ADMINISTRATIVA
 if administrador:
     with st.sidebar:
-
         st.divider()
-        st.markdown("### Cadastrar matéria")
+        st.markdown("### ⚙️ Gerenciar Notas")
 
-        st.caption(
-            "Informe as notas de cada atividade. "
-            "A nota obtida será preenchida automaticamente "
-            "com o mesmo valor da nota máxima.")
+        with st.expander("➕ Cadastrar matéria", expanded=dados.empty):
+            st.caption(
+                "Informe as notas de cada atividade. "
+                "A nota obtida será preenchida automaticamente com o mesmo valor da nota máxima."
+            )
+            with st.form("cadastro", clear_on_submit=True):
+                materia = st.text_input("Nome da matéria", placeholder="Ex: Engenharia de Software")
+                c_p, c_e = st.columns(2)
+                presenca = c_p.number_input(
+                    "Presença (máx)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    step=1.0,
+                )
+                exercicios = c_e.number_input(
+                    "Exercícios (máx)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    step=1.0,
+                )
+                c_t, c_pr = st.columns(2)
+                trabalho = c_t.number_input(
+                    "Trabalho (máx)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    step=1.0,
+                )
+                prova = c_pr.number_input(
+                    "Prova (máx)",
+                    min_value=0.0,
+                    max_value=100.0,
+                    step=1.0,
+                )
+                cadastrar = st.form_submit_button(
+                    "Cadastrar matéria",
+                    type="primary",
+                    use_container_width=True,
+                )
 
-        with st.form("cadastro", clear_on_submit=True,):
-            materia = st.text_input("Nome da matéria")
+            if cadastrar:
+                nome = materia.strip()
+                valores = [
+                    ("Progresso em Aula", presenca),
+                    ("Exercício", exercicios),
+                    ("Trabalho", trabalho),
+                    ("Prova", prova),
+                ]
+                existentes = (
+                    dados["disciplina"]
+                    .astype(str)
+                    .str.strip()
+                    .str.casefold()
+                    .tolist()
+                )
 
-            presenca = st.number_input(
-                "Presença / Progresso — nota máxima",
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,)
+                if not nome:
+                    st.error("Informe o nome da matéria.")
+                elif nome.casefold() in existentes:
+                    st.error("Essa matéria já existe.")
+                elif not any(valor > 0 for _, valor in valores):
+                    st.error("Informe pelo menos uma nota máxima.")
+                else:
+                    linhas = [
+                        {
+                            "disciplina": nome,
+                            "categoria": categoria,
+                            "atividade": categoria,
+                            "nota_obtida": float(maxima),
+                            "nota_maxima": float(maxima),
+                        }
+                        for categoria, maxima in valores
+                        if maxima > 0
+                    ]
+                    try:
+                        inserir(c, uid, linhas)
+                        st.session_state["mensagem"] = "Matéria salva no Supabase!"
+                        st.rerun()
+                    except Exception:
+                        logger.exception("Erro ao cadastrar matéria")
+                        st.error("Não foi possível salvar a matéria.")
 
-            exercicios = st.number_input(
-                "Exercícios — nota máxima",
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,)
-
-            trabalho = st.number_input(
-                "Trabalho — nota máxima",
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,)
-
-            prova = st.number_input(
-                "Prova — nota máxima",
-                min_value=0.0,
-                max_value=100.0,
-                step=1.0,)
-
-            cadastrar = st.form_submit_button(
-                "Cadastrar matéria",
-                type="primary",
-                use_container_width=True,)
-
-        if cadastrar:
-            nome = materia.strip()
-
-            valores = [("Progresso em Aula", presenca), ("Exercício", exercicios), ("Trabalho", trabalho), ("Prova", prova),]
-
-            existentes = (dados["disciplina"].astype(str).str.strip().str.casefold().tolist())
-
-            if not nome:
-                st.error("Informe o nome da matéria.")
-
-            elif nome.casefold() in existentes:
-                st.error("Essa matéria já existe.")
-
-            elif not any(valor > 0 for _, valor in valores):
-                st.error("Informe pelo menos uma nota máxima.")
-
-            else:
-                linhas = [{
-                        "disciplina": nome,
-                        "categoria": categoria,
-                        "atividade": categoria,
-                        "nota_obtida": float(maxima),
-                        "nota_maxima": float(maxima),}
-                    for categoria, maxima in valores
-                    if maxima > 0]
-
-                try:
-                    inserir(c, uid, linhas)
-                    st.session_state["mensagem"] = ("Matéria salva no Supabase!")
-                    st.rerun()
-
-                except Exception:
-                    logger.exception("Erro ao cadastrar matéria")
-                    st.error("Não foi possível salvar a matéria.")
-
-# ATUALIZAR NOTA
-        st.divider()
-        st.markdown("### Atualizar nota obtida")
-
+        # ATUALIZAR NOTA
         if not dados.empty:
-            with st.form("atualizar"):
-
-                nome = st.selectbox("Matéria", dados["disciplina"].unique().tolist(),)
-
+            with st.expander("✏️ Atualizar nota obtida", expanded=True):
+                nome = st.selectbox(
+                    "Matéria",
+                    dados["disciplina"].unique().tolist(),
+                    key="sel_materia_att",
+                )
                 parte = dados[dados["disciplina"] == nome]
-
-                opcoes = {(
-                        f"{r['categoria']} — {r['atividade']} "
-                        f"(ID {r['id']}; "
-                        f"máximo {r['nota_maxima']:g})"): int(r["id"])
-                    for _, r in parte.iterrows()}
-
-                escolha = st.selectbox("Atividade", list(opcoes),)
-
+                opcoes = {
+                    (
+                        f"{r['categoria']} - {r['atividade']} "
+                        f"(ID {r['id']}; máximo {r['nota_maxima']:g})"
+                    ): int(r["id"])
+                    for _, r in parte.iterrows()
+                }
+                escolha = st.selectbox("Atividade", list(opcoes), key="sel_ativ_att")
                 registro_id = opcoes[escolha]
-
                 registro = dados.loc[dados["id"] == registro_id].iloc[0]
-
                 maxima = float(registro["nota_maxima"])
 
-                nota = st.number_input("Nota obtida", min_value=0.0, max_value=maxima, value=min(float(registro["nota_obtida"]),maxima,),step=1.0,)
+                with st.form("atualizar"):
+                    nota = st.number_input(
+                        f"Nota obtida (0 a {maxima:g})",
+                        min_value=0.0,
+                        max_value=maxima,
+                        value=min(float(registro["nota_obtida"]), maxima),
+                        step=1.0,
+                    )
+                    gravar = st.form_submit_button(
+                        "Salvar nota obtida",
+                        type="primary",
+                        use_container_width=True,
+                    )
 
-                gravar = st.form_submit_button("Salvar nota obtida", use_container_width=True,)
+                if gravar:
+                    try:
+                        atualizar(c, registro_id, nota)
+                        st.session_state["mensagem"] = "Nota atualizada!"
+                        st.rerun()
+                    except Exception:
+                        logger.exception("Erro ao atualizar nota")
+                        st.error("Não foi possível atualizar a nota.")
 
-            if gravar:
-                try:
-                    atualizar(c, registro_id, nota,)
-                    st.session_state["mensagem"] = ("Nota atualizada!")
-                    st.rerun()
+            # EXCLUIR MATÉRIA
+            with st.expander("🗑️ Excluir matéria"):
+                apagar = st.selectbox(
+                    "Matéria para excluir",
+                    dados["disciplina"].unique().tolist(),
+                )
+                confirma = st.checkbox("Confirmo a exclusão definitiva desta matéria")
+                if st.button(
+                    "🗑️ Excluir matéria",
+                    disabled=not confirma,
+                    use_container_width=True,
+                ):
+                    try:
+                        excluir(c, apagar)
+                        st.session_state["mensagem"] = "Matéria excluída!"
+                        st.rerun()
+                    except Exception:
+                        logger.exception("Erro ao excluir matéria")
+                        st.error("Não foi possível excluir a matéria.")
 
-                except Exception:
-                    logger.exception("Erro ao atualizar nota")
-                    st.error("Não foi possível atualizar a nota.")
-
-# EXCLUIR MATÉRIA
-
-        st.divider()
-        st.markdown("### Excluir matéria")
-
-        if not dados.empty:
-            apagar = st.selectbox("Matéria para excluir", dados["disciplina"].unique().tolist(),)
-
-            confirma = st.checkbox("Confirmo a exclusão definitiva desta matéria")
-
-            if st.button("🗑️ Excluir matéria", disabled=not confirma, use_container_width=True,):
-                try:
-                    excluir(c, apagar)
-                    st.session_state["mensagem"] = ("Matéria excluída!")
-                    st.rerun()
-
-                except Exception:
-                    logger.exception("Erro ao excluir matéria")
-                    st.error("Não foi possível excluir a matéria.")
-
-# IMPORTAÇÃO DE CSV
-        st.divider()
-
-        with st.expander("Importar CSV antigo"):
-            arquivo = st.file_uploader("Selecione notas_academicas.csv", type="csv",)
-
+        # IMPORTAÇÃO DE CSV
+        with st.expander("📥 Importar CSV antigo"):
+            arquivo = st.file_uploader("Selecione notas_academicas.csv", type="csv")
             if arquivo is not None:
                 try:
-                    antigo = pd.read_csv(arquivo, encoding="utf-8-sig",)
-
+                    antigo = pd.read_csv(arquivo, encoding="utf-8-sig")
                     if any(coluna not in antigo.columns for coluna in COLUNAS):
-                        st.error("O CSV precisa ter as cinco " "colunas originais.")
-
+                        st.error("O CSV precisa ter as cinco colunas originais.")
                     else:
                         antigo = antigo[COLUNAS].copy()
-
-                        for coluna in ("nota_obtida", "nota_maxima",):
-                            antigo[coluna] = pd.to_numeric(antigo[coluna], errors="raise",)
-
-                        valido = (antigo[COLUNAS[:3]].notna().all().all()
+                        for coluna in ("nota_obtida", "nota_maxima"):
+                            antigo[coluna] = pd.to_numeric(
+                                antigo[coluna],
+                                errors="raise",
+                            )
+                        valido = (
+                            antigo[COLUNAS[:3]].notna().all().all()
                             and (antigo["nota_maxima"] > 0).all()
                             and (antigo["nota_obtida"] >= 0).all()
-                            and (antigo["nota_obtida"]
-                                <= antigo["nota_maxima"]).all())
-
+                            and (antigo["nota_obtida"] <= antigo["nota_maxima"]).all()
+                        )
                         if not valido:
-                            st.error("CSV contém campos vazios " "ou notas inválidas.")
-
-                        elif st.button("Importar (atenção: pode duplicar registros)"):
-                            inserir(c, uid, antigo.to_dict(orient="records"),)
-                            st.session_state["mensagem"] = ("CSV importado!")
+                            st.error("CSV contém campos vazios ou notas inválidas.")
+                        elif st.button(
+                            "Importar (atenção: pode duplicar registros)",
+                            type="primary",
+                            use_container_width=True,
+                        ):
+                            inserir(c, uid, antigo.to_dict(orient="records"))
+                            st.session_state["mensagem"] = "CSV importado!"
                             st.rerun()
-
                 except Exception:
                     logger.exception("Erro na importação do CSV")
                     st.error("Não foi possível importar o CSV.")
 
 # MENSAGENS E CABEÇALHO
 if "mensagem" in st.session_state:
-    st.success(st.session_state.pop("mensagem"))
+    st.toast(st.session_state.pop("mensagem"), icon="✅")
+
+modo_cor = "#10B981" if administrador else "#38BDF8"
+modo_bg = "rgba(16, 185, 129, 0.14)" if administrador else "rgba(56, 189, 248, 0.14)"
+modo_txt = "🛡️ Administração" if administrador else "🌐 Visualização Pública"
 
 st.markdown(
-    """
-    <div class="hero">
-        <h1>DASHBOARD ACADÊMICO</h1>
-        <p style="color:#FFFFFF; font-size:17px; font-weight:600;"> Wenndy Ferreira dos Santos </p>
-        <p> Graduação em Análise e Desenvolvimento de Sistemas (ADS)</p>
-        <p> Instituição de ensino: Anhaguera </p>
-        <p style="margin-top:12px;"> Acompanhamento de notas, avaliações e desempenho acadêmico por disciplina. </p>
-    </div>""", unsafe_allow_html=True,)
-
-st.caption("Desenvolvido por Wenndy Ferreira dos Santos " "• Supabase • " + ("Administração" if administrador else "Visualização pública"))
+    f"""
+    <div class="hero-card">
+        <div class="hero-top-row">
+            <span class="hero-badge">🎓 Analytics • Portfólio Acadêmico</span>
+            <span class="hero-mode-pill" style="color: {modo_cor}; background: {modo_bg}; border: 1px solid {modo_cor}44;">
+                {modo_txt}
+            </span>
+        </div>
+        <h1 class="hero-title">DASHBOARD ACADÊMICO</h1>
+        <div class="hero-meta-grid">
+            <span class="hero-meta-item">👤 <b>Wenndy Ferreira dos Santos</b></span>
+            <span class="hero-meta-item">💻 Graduação em Análise e Desenvolvimento de Sistemas (ADS)</span>
+            <span class="hero-meta-item">🏛️ Instituição de ensino: <b>Anhanguera</b></span>
+        </div>
+        <p class="hero-subtitle">Acompanhamento de notas, avaliações e desempenho acadêmico por disciplina.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # RESUMO ACADÊMICO
 resumo = tabela_resumo(dados)
@@ -416,144 +831,310 @@ if resumo.empty:
     st.info("Nenhuma matéria cadastrada no momento.")
     st.stop()
 
+total_disc = len(resumo)
+media_final = resumo["Nota Final"].mean()
+aprovadas = int((resumo["Nota Final"] >= 60).sum())
+taxa_aprov = (aprovadas / total_disc * 100) if total_disc > 0 else 0
+maior_nota = resumo["Nota Final"].max()
+melhor_materia = resumo.loc[resumo["Nota Final"].idxmax(), "Matéria"]
+
 c1, c2, c3, c4 = st.columns(4)
+with c1:
+    st.markdown(
+        render_kpi(
+            "Disciplinas",
+            f"{total_disc}",
+            "Matérias registradas no histórico",
+            "📚",
+            COR_PRIMARIA,
+            "rgba(99, 102, 241, 0.15)",
+        ),
+        unsafe_allow_html=True,
+    )
 
-c1.metric("Disciplinas", len(resumo),)
+with c2:
+    cor_media = COR_SUCESSO if media_final >= 60 else COR_ALERTA
+    bg_media = (
+        "rgba(16, 185, 129, 0.15)"
+        if media_final >= 60
+        else "rgba(245, 158, 11, 0.15)"
+    )
+    st.markdown(
+        render_kpi(
+            "Média das notas finais",
+            f'{formatar_nota(round(media_final, 1))} <span style="font-size:1rem;color:#64748B;">/ 100</span>',
+            "Meta de aprovação: 60 pts",
+            "📈",
+            cor_media,
+            bg_media,
+        ),
+        unsafe_allow_html=True,
+    )
 
-c2.metric("Média das notas finais", f"{formatar_nota(resumo['Nota Final'].mean())} / 100",)
+with c3:
+    st.markdown(
+        render_kpi(
+            "Aprovadas (≥ 60)",
+            f'{aprovadas} <span style="font-size:1rem;color:#64748B;">de {total_disc}</span>',
+            f"{taxa_aprov:.0f}% de aproveitamento",
+            "🏆",
+            COR_SUCESSO,
+            "rgba(16, 185, 129, 0.15)",
+        ),
+        unsafe_allow_html=True,
+    )
 
-c3.metric("Aprovadas (≥ 60)", int((resumo["Nota Final"] >= 60).sum()),)
+with c4:
+    melhor_curto = (
+        melhor_materia
+        if len(melhor_materia) <= 22
+        else melhor_materia[:20] + "…"
+    )
+    st.markdown(
+        render_kpi(
+            "Maior nota",
+            f'{formatar_nota(maior_nota)} <span style="font-size:1rem;color:#64748B;">pts</span>',
+            f"Destaque: {melhor_curto}",
+            "⭐",
+            COR_SECUNDARIA,
+            "rgba(56, 189, 248, 0.15)",
+        ),
+        unsafe_allow_html=True,
+    )
 
-c4.metric("Maior nota", formatar_nota(resumo["Nota Final"].max()),)
-
+st.markdown('<div style="height: 8px;"></div>', unsafe_allow_html=True)
 st.caption("Notas ainda não lançadas contam como zero.")
 
-st.divider()
+resumo["Nome Gráfico"] = resumo["Matéria"].apply(abreviar_materia)
+resumo["Nota Final Formatada"] = resumo["Nota Final"].apply(formatar_nota)
+resumo["Nota Prova Formatada"] = resumo["Nota da Prova"].apply(formatar_nota)
 
-resumo["Nome Gráfico"] = (resumo["Matéria"].apply(abreviar_materia))
+aba_visao, aba_boletim, aba_dados = st.tabs(
+    [
+        "📊 Visão Gráfica",
+        "🎯 Progresso por Matéria",
+        "🗄️ Tabelas e Registros",
+    ]
+)
 
-# GRÁFICO 1 — NOTA FINAL POR MATÉRIA
-resumo["Nota Final Formatada"] = (resumo["Nota Final"].apply(formatar_nota))
+with aba_visao:
+    col_esq, col_dir = st.columns([1.15, 0.85], gap="large")
 
-fig1 = px.line(
-    resumo,
-    x="Nome Gráfico",
-    y="Nota Final",
-    markers=True,
-    title="Nota final por matéria",
-    color_discrete_sequence=[VERMELHO],
-    hover_data={
-        "Matéria": True,
-        "Nome Gráfico": False,
-        "Nota Final": ":.2f",
-        "Nota Final Formatada": False,},)
+    with col_esq:
+        # GRÁFICO 1 - NOTA FINAL POR MATÉRIA
+        cores_marcadores = [
+            COR_SUCESSO if v >= 60 else COR_PERIGO
+            for v in resumo["Nota Final"]
+        ]
+        fig1 = go.Figure()
+        fig1.add_trace(
+            go.Scatter(
+                x=resumo["Nome Gráfico"],
+                y=resumo["Nota Final"],
+                mode="lines+markers+text",
+                text=resumo["Nota Final Formatada"].tolist(),
+                textposition="top center",
+                textfont=dict(
+                    size=12,
+                    color="#F8FAFC",
+                    family="JetBrains Mono, monospace",
+                ),
+                line=dict(
+                    color=COR_PRIMARIA,
+                    width=3.5,
+                    shape="spline",
+                    smoothing=0.8,
+                ),
+                fill="tozeroy",
+                fillcolor="rgba(99, 102, 241, 0.12)",
+                marker=dict(
+                    size=12,
+                    color=cores_marcadores,
+                    line=dict(width=2.5, color="#0F172A"),
+                ),
+                customdata=resumo[["Matéria", "Nota Final Formatada"]],
+                hovertemplate="<b>%{customdata[0]}</b><br>Nota final: <b>%{customdata[1]} pts</b><extra></extra>",
+            )
+        )
+        fig1.add_hline(
+            y=60,
+            line_dash="dash",
+            line_color=COR_SUCESSO,
+            opacity=0.75,
+            annotation_text="Aprovação: 60",
+            annotation_position="top left",
+            annotation_font=dict(color=COR_SUCESSO, size=11),
+        )
+        fig1.update_layout(title="Nota final por matéria")
+        fig1.update_xaxes(title=None, tickangle=0, tickfont=dict(size=10))
+        fig1.update_yaxes(
+            title="Nota final",
+            range=[0, max(108, float(resumo["Nota Final"].max()) * 1.15)],
+        )
+        st.plotly_chart(
+            tema_grafico(fig1, altura=450),
+            use_container_width=True,
+        )
 
-fig1.update_traces(
-    text=resumo["Nota Final Formatada"].tolist(),
-    textposition="top center",
-    line=dict(width=3),
-    marker=dict(size=10),)
+    with col_dir:
+        # GRÁFICO 2 - NOTAS DAS PROVAS
+        fig2 = px.bar(
+            resumo,
+            x="Nota da Prova",
+            y="Matéria",
+            orientation="h",
+            title="Notas das provas por matéria",
+            color="Nota da Prova",
+            color_continuous_scale=["#4F46E5", "#38BDF8", "#10B981"],
+        )
+        fig2.update_traces(
+            text=resumo["Nota Prova Formatada"].tolist(),
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate="<b>%{y}</b><br>Nota da prova: <b>%{text} pts</b><extra></extra>",
+        )
+        fig2.update_coloraxes(showscale=False)
+        fig2.update_xaxes(
+            title="Nota da avaliação",
+            range=[0, max(55, float(resumo["Nota da Prova"].max()) * 1.2)],
+        )
+        fig2.update_yaxes(
+            title=None,
+            automargin=True,
+            categoryorder="array",
+            categoryarray=resumo["Matéria"].tolist()[::-1],
+        )
+        st.plotly_chart(
+            tema_grafico(
+                fig2,
+                altura=max(450, 62 * len(resumo)),
+                esquerda=190,
+            ),
+            use_container_width=True,
+        )
 
-fig1.update_xaxes(
-    title=None,
-    tickangle=0,
-    tickfont=dict(size=10),)
+    # GRÁFICO 3 - COMPARAÇÃO DE NOTAS
+    categorias_comparacao = ["Presença/Progresso", "Exercícios", "Trabalhos"]
+    fig3 = px.bar(
+        resumo,
+        x="Nome Gráfico",
+        y=categorias_comparacao,
+        barmode="group",
+        title="Comparação de notas por matéria",
+        color_discrete_map={
+            "Presença/Progresso": COR_PRIMARIA,
+            "Exercícios": COR_SECUNDARIA,
+            "Trabalhos": COR_ROXO,
+        },
+        labels={"value": "Nota", "variable": "Categoria"},
+    )
 
-fig1.update_yaxes(
-    title="Nota final",
-    range=[0, max(105, float(resumo["Nota Final"].max()) * 1.12,),],)
+    for trace in fig3.data:
+        valores = [float(valor) for valor in trace.y]
+        rotulos = [formatar_nota(valor) for valor in valores]
+        trace.update(
+            text=rotulos,
+            texttemplate="%{text}",
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate="%{x}<br>" + trace.name + ": <b>%{text}</b><extra></extra>",
+        )
 
-fig1.add_hline(
-    y=60,
-    line_dash="dash",
-    line_color="#FFFFFF",
-    opacity=0.6,
-    annotation_text="Aprovação: 60",
-    annotation_position="top left",)
-
-st.plotly_chart(tema_grafico(fig1, altura=490,), use_container_width=True,)
-
-# GRÁFICO 2 — NOTAS DAS PROVAS
-resumo["Nota Prova Formatada"] = (resumo["Nota da Prova"].apply(formatar_nota))
-
-fig2 = px.bar(
-    resumo,
-    x="Nota da Prova",
-    y="Matéria",
-    orientation="h",
-    title="Notas das provas por matéria",
-    color_discrete_sequence=[VERMELHO],)
-
-fig2.update_traces(
-    text=resumo["Nota Prova Formatada"].tolist(),
-    textposition="outside",
-    cliponaxis=False,)
-
-fig2.update_xaxes(
-    title="Nota da avaliação",
-    range=[0, max(55, float(resumo["Nota da Prova"].max()) * 1.13,),],)
-
-fig2.update_yaxes(
-    title=None,
-    automargin=True,
-    categoryorder="array",
-    categoryarray=resumo["Matéria"].tolist()[::-1],)
-
-st.plotly_chart(tema_grafico(fig2, altura=max(440, 65 * len(resumo),), esquerda=250,), use_container_width=True,)
-
-# GRÁFICO 3 — COMPARAÇÃO DE NOTAS
-categorias_comparacao = ["Presença/Progresso", "Exercícios", "Trabalhos",]
-
-fig3 = px.bar(
-    resumo,
-    x="Nome Gráfico",
-    y=categorias_comparacao,
-    barmode="group",
-    title="Comparação de notas por matéria",
-    color_discrete_map={
-"Presença/Progresso": "#E53945",
-        "Exercícios": "#FFFFFF",
-        "Trabalhos": "#A7ABB5",},
-    labels={
-        "value": "Nota",
-        "variable": "Categoria",},)
-
-for trace in fig3.data:
-    valores = [float(valor)for valor in trace.y]
-
-    rotulos = [f"{valor:g}" for valor in valores]
-
-    trace.update(
-        text=rotulos,
-        texttemplate="%{text}",
-        textposition="outside",
-        cliponaxis=False,
-        hovertemplate=(
-            "%{x}<br>"
-            + trace.name
-            + ": %{y:g}"
-            + "<extra></extra>"),)
-
-fig3.update_xaxes(
-    title=None,
-    tickangle=0,
-    tickfont=dict(size=10),)
-
-fig3.update_yaxes(
-    title="Pontos",
-    range=[0, max(35, float(resumo[categorias_comparacao].max().max()) * 1.18,),],)
-
-st.plotly_chart(tema_grafico(fig3, altura=500,), use_container_width=True,)
-
-# TABELAS
-colunas_auxiliares = ["Nome Gráfico", "Nota Final Formatada", "Nota Prova Formatada",]
-
-with st.expander("Ver resumo das notas"):
-    st.dataframe(resumo.drop(columns=colunas_auxiliares, errors="ignore",),
+    fig3.update_xaxes(title=None, tickangle=0, tickfont=dict(size=10))
+    fig3.update_yaxes(
+        title="Pontos",
+        range=[
+            0,
+            max(
+                35,
+                float(resumo[categorias_comparacao].max().max()) * 1.22,
+            ),
+        ],
+    )
+    st.plotly_chart(
+        tema_grafico(fig3, altura=460),
         use_container_width=True,
-        hide_index=True,)
+    )
 
-with st.expander("Ver registros acadêmicos"):
-    st.dataframe(dados[COLUNAS], use_container_width=True, hide_index=True,)
+with aba_boletim:
+    st.markdown("#### 🎯 Acompanhamento Individual por Disciplina")
+    st.caption(
+        "Barras de progresso rumo aos 100 pontos. A marca de 60 pontos define a aprovação na matéria."
+    )
 
-st.caption("Dashboard Acadêmico • " "Python · Streamlit · Pandas · Plotly · Supabase")
+    col_b1, col_b2 = st.columns(2, gap="medium")
+    for idx, linha in resumo.iterrows():
+        nota_f = float(linha["Nota Final"])
+        pct = min(max(nota_f, 0.0), 100.0)
+        aprovado = nota_f >= 60
+        cor_barra = (
+            "linear-gradient(90deg, #10B981, #34D399)"
+            if aprovado
+            else "linear-gradient(90deg, #6366F1, #38BDF8)"
+        )
+        cor_status = "#10B981" if aprovado else "#F59E0B"
+        bg_status = (
+            "rgba(16, 185, 129, 0.14)"
+            if aprovado
+            else "rgba(245, 158, 11, 0.14)"
+        )
+        txt_status = (
+            "Aprovado"
+            if aprovado
+            else f"Faltam {formatar_nota(max(0, 60 - nota_f))} pts"
+        )
+
+        card_html = f"""
+        <div class="subject-card">
+            <div class="subject-header">
+                <span class="subject-name">{linha['Matéria']}</span>
+                <span class="status-pill" style="color: {cor_status}; background: {bg_status}; border: 1px solid {cor_status}44;">
+                    {txt_status} • {formatar_nota(nota_f)}/100
+                </span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {pct}%; background: {cor_barra};"></div>
+            </div>
+            <div class="subject-meta">
+                <span>📝 Prova: <b>{formatar_nota(linha['Nota da Prova'])}</b></span>
+                <span>📚 Trabalhos: <b>{formatar_nota(linha['Trabalhos'])}</b></span>
+                <span>✍️ Exercícios: <b>{formatar_nota(linha['Exercícios'])}</b></span>
+                <span>🙋 Presença: <b>{formatar_nota(linha['Presença/Progresso'])}</b></span>
+            </div>
+        </div>
+        """
+        if idx % 2 == 0:
+            col_b1.markdown(card_html, unsafe_allow_html=True)
+        else:
+            col_b2.markdown(card_html, unsafe_allow_html=True)
+
+with aba_dados:
+    colunas_auxiliares = [
+        "Nome Gráfico",
+        "Nota Final Formatada",
+        "Nota Prova Formatada",
+    ]
+    st.markdown("#### 📋 Resumo das Notas")
+    st.dataframe(
+        resumo.drop(columns=colunas_auxiliares, errors="ignore"),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Nota Final": st.column_config.ProgressColumn(
+                "Nota Final (0–100)",
+                format="%.1f pts",
+                min_value=0,
+                max_value=100,
+            ),
+        },
+    )
+
+    st.markdown("#### 🗄️ Registros Acadêmicos")
+    st.dataframe(dados[COLUNAS], use_container_width=True, hide_index=True)
+
+st.divider()
+st.caption(
+    "🎓 Dashboard Acadêmico • Desenvolvido por Wenndy Ferreira dos Santos • "
+    "Python · Streamlit · Pandas · Plotly · Supabase • "
+    + ("Administração" if administrador else "Visualização pública")
+)
